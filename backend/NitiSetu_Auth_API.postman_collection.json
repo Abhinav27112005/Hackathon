@@ -1,0 +1,223 @@
+{
+    "info": {
+        "name": "NitiSetu Auth API",
+        "description": "Authentication endpoints for NitiSetu backend",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "authentication": [
+        {
+            "name": "1. Register User",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Ramesh Kumar\",\n  \"phone\": \"9876543210\",\n  \"password\": \"test123\",\n  \"language\": \"hi\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:5000/api/auth/register",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "auth",
+                        "register"
+                    ]
+                },
+                "description": "Register a new user and send OTP"
+            }
+        },
+        {
+            "name": "2. Send OTP (Resend)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"phone\": \"9876543210\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:5000/api/auth/send-otp",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "auth",
+                        "send-otp"
+                    ]
+                },
+                "description": "Resend OTP to existing user"
+            }
+        },
+        {
+            "name": "3. Verify OTP",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"phone\": \"9876543210\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:5000/api/auth/verify-otp",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "auth",
+                        "verify-otp"
+                    ]
+                },
+                "description": "Verify OTP and get authenticated"
+            }
+        },
+        {
+            "name": "4. Login with Password",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"phone\": \"9876543210\",\n  \"password\": \"test123\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:5000/api/auth/login",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "auth",
+                        "login"
+                    ]
+                },
+                "description": "Login using phone and password"
+            }
+        },
+        {
+            "name": "5. Get Current User",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN_HERE",
+                        "description": "Replace with actual token from login/register"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:5000/api/auth/me",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "auth",
+                        "me"
+                    ]
+                },
+                "description": "Get currently logged in user's profile (requires authentication)"
+            }
+        },
+        {
+            "name": "6. Logout",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:5000/api/auth/logout",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "auth",
+                        "logout"
+                    ]
+                },
+                "description": "Logout (client should delete token)"
+            }
+        }
+    ],
+    "baseTesting": [
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:5000/api/health",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "health"
+                    ]
+                },
+                "description": "Check if API is running"
+            }
+        },
+        {
+            "name": "Base Example API Check",
+            "request": {
+                "method": [
+                    "POST",
+                    "GET"
+                ],
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:5000/api/v1/example",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "v1",
+                        "example"
+                    ]
+                },
+                "description": "Example data from NitiSetu API"
+            }
+        }
+    ]
+}
