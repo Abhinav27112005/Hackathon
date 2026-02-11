@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 
 import authRoutes from './authRoutes';
 import exampleRoutes from "./exampleRoutes";
+import profileRoutes from "./profileRoutes";
 
 const router = Router();
 // Routes
@@ -24,5 +25,6 @@ router.get('/health', (req: Request, res: Response) => {
 
 router.use('/auth', authRoutes);
 router.use('/v1', exampleRoutes);//this routes is only for testing purpose
+router.use('/profile', profileRoutes);
 
 export default router;
