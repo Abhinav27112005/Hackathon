@@ -423,7 +423,7 @@ MIT License - Free to use for educational and commercial purposes
 
 ## 👥 Team
 
-- **Developer**: [Your Name]
+- **Developer**: [Abhinav]
 - **Hackathon**: NPTEL Internship
 - **Year**: 2026
 
@@ -440,9 +440,9 @@ MIT License - Free to use for educational and commercial purposes
 
 ## 📧 Contact
 
-- **Email**: your.email@example.com
-- **GitHub**: [@your-username](https://github.com/your-username)
-- **LinkedIn**: [Your Name](https://linkedin.com/in/your-profile)
+- **Email**: abhinavkumarjha90@example.com
+- **GitHub**: [Abhinav27112005](https://github.com/Abhinav27112005)
+- **LinkedIn**: [Abhinav Kumar Jha](https://linkedin.com/in/abhinavkumarjha121)
 
 ---
 
