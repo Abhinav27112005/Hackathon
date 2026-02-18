@@ -97,3 +97,17 @@ export const voiceProfileRules = [
 
     body('language').optional().isIn(['en', 'hi', 'mr', 'ta']).withMessage("Language must be en,hi,mr or ta"),
 ];
+
+//Scheme validation rules
+
+export const schemeUploadRules = [
+    body('name').trim().notEmpty().withMessage("Scheme Name is required!").isLength({ min: 3, max: 300 }).withMessage("Scheme name must be between 3 and 300 characters long"),
+
+    body('shortName').trim().notEmpty().withMessage("Scheme short name is required!").isLength({ min: 2, max: 50 }).withMessage("Short name must be 2-50 characters long"),
+
+    body('ministry').optional().trim().isLength({ max: 200 }).withMessage("Ministry name is too long"),
+
+    body('description').optional().trim().isLength({ max: 2000 }).withMessage("Description is too long"),
+
+    body("benefitAmount").optional().trim().isLength({ max: 200 }).withMessage("Benefit amount description is too long"),
+];
