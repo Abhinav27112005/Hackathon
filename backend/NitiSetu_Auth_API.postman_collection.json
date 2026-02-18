@@ -174,6 +174,113 @@
             }
         }
     ],
+    "Profile": [
+        {
+            "name": "1. Get Profile",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN_HERE",
+                        "description": "Replace with actual token from login/register"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:5000/api/profile",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "profile"
+                    ]
+                },
+                "description": "Get currently logged in user's profile (requires authentication)"
+            }
+        },
+        {
+            "name": "2. Create Profile",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN_HERE",
+                        "description": "Replace with actual token from login/register"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:5000/api/profile",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "profile"
+                    ]
+                },
+                "description": "Create a new profile (requires authentication)"
+            }
+        },
+        {
+            "name": "3. Update Profile",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN_HERE",
+                        "description": "Replace with actual token from login/register"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:5000/api/profile",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "profile"
+                    ]
+                },
+                "description": "Update currently logged in user's profile (requires authentication)"
+            }
+        },
+        {
+            "name": "4. Create Profile from Voice",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer YOUR_TOKEN_HERE",
+                        "description": "Replace with actual token from login/register"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:5000/api/profile/voice",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000",
+                    "path": [
+                        "api",
+                        "profile",
+                        "voice"
+                    ]
+                },
+                "description": "Create a new profile from voice (requires authentication)"
+            }
+        }
+    ],
     "baseTesting": [
         {
             "name": "Health Check",
