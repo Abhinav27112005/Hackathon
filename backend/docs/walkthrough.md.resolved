@@ -1,0 +1,306 @@
+# Git Workflow Guide - Complete Walkthrough
+
+## Your Branch Flow Diagram
+
+```mermaid
+gitGraph
+   commit id: "f724542 BaseSetup"
+   commit id: "4e364e0 FixedPortBinding"
+   commit id: "b0aaa98 Fix @types"
+   commit id: "db51a66 CORS Config"
+   branch feature/authSystem
+   checkout feature/authSystem
+   commit id: "Auth System + OTP"
+   checkout main
+   commit id: "ec1b47a main HEAD"
+   branch feature/voice-profile-ai
+   checkout feature/voice-profile-ai
+   commit id: "Voice Profile AI"
+   commit id: "Gemini Integration"
+   commit id: "README Update"
+   branch feature/scheme-pdf-rag
+   checkout feature/scheme-pdf-rag
+   commit id: "c1f291c Scheme PDF + RAG" type: HIGHLIGHT
+```
+
+### Branch Hierarchy
+
+```mermaid
+flowchart TD
+    A["main<br/>(stable base)"] --> B["feature/authSystem<br/>(Auth + OTP)"]
+    A --> C["feature/voice-profile-ai<br/>(Voice AI + Gemini)"]
+    C --> D["feature/scheme-pdf-rag<br/>(PDF Upload + RAG Pipeline)<br/>⭐ YOU ARE HERE"]
+
+    style A fill:#2d6a4f,color:#fff
+    style B fill:#457b9d,color:#fff
+    style C fill:#e76f51,color:#fff
+    style D fill:#f4a261,color:#000,stroke:#e76f51,stroke-width:3px
+```
+
+> [!IMPORTANT]
+> `feature/scheme-pdf-rag` was branched **from** `feature/voice-profile-ai`, not from `main`. This means it includes all voice-profile changes PLUS your new scheme/PDF code.
+
+---
+
+## Every Command Explained
+
+### Phase 1: Checking Current State
+
+#### `git status`
+```bash
+git status
+```
+**What it does:** Shows the current state of your working directory — which files are modified, staged, or untracked.
+
+**Concept:** Git tracks files in 3 areas:
+```
+Working Directory  →  Staging Area  →  Repository
+ (your edits)        (git add)        (git commit)
+```
+`git status` tells you where each file currently sits.
+
+**Our output showed:**
+- `M backend/src/config/cloudinary.ts` → **M**odified but not staged
+- `?? backend/src/config/Gemini.ts` → **??** = Untracked (new file Git doesn't know about)
+
+---
+
+#### `git remote -v`
+```bash
+git remote -v
+```
+**What it does:** Shows which remote servers your repo is connected to.
+
+**Concept:** A "remote" is a copy of your repo on a server (GitHub). `-v` means "verbose" — shows both fetch and push URLs.
+
+**Our output:** `origin https://github.com/Abhinav27112005/Hackathon.git`
+- `origin` = default name for your GitHub remote
+
+---
+
+#### `git branch`
+```bash
+git branch      # local branches only
+git branch -a   # all branches (local + remote)
+```
+**What it does:** Lists all branches. The `*` marks which branch you're currently on.
+
+**Concept:** Branches are like parallel timelines. Each branch can have different code without affecting others.
+
+---
+
+#### `git status --porcelain` / `git status --short`
+```bash
+git status --short
+```
+**What it does:** Compact version of `git status`. Shows file status in 2-character codes:
+- `M ` = modified and staged
+- ` M` = modified but NOT staged
+- `??` = untracked (new file)
+- `A ` = newly added to staging
+- `D ` = deleted
+
+---
+
+### Phase 2: Saving Your Work Temporarily
+
+#### `git stash`
+```bash
+git stash
+```
+**What it does:** Temporarily saves all your uncommitted changes and gives you a clean working directory.
+
+**Concept:** Think of it as putting your changes in a "pocket" so you can switch branches safely. Your changes aren't lost — they're saved in a stash stack.
+
+**Why we used it:** We needed to switch to `main` branch to create a new branch, but you had uncommitted changes. Git won't let you switch branches with uncommitted changes that would conflict.
+
+```
+Before stash:  Working Directory has changes
+After stash:   Working Directory is clean (changes saved in stash)
+```
+
+---
+
+### Phase 3: Creating the New Branch
+
+#### `git checkout main`
+```bash
+git checkout main
+```
+**What it does:** Switches to the `main` branch. All files in your editor change to match `main`'s code.
+
+**Concept:** `checkout` means "switch to this branch and update my files to match."
+
+> [!NOTE]
+> We initially tried branching from `main`, but this caused conflicts because your scheme code depends on files that only exist in `feature/voice-profile-ai`. So we switched strategy.
+
+---
+
+#### `git checkout -b feature/scheme-pdf-rag`
+```bash
+git checkout -b feature/scheme-pdf-rag
+```
+**What it does:** Creates a **new** branch AND switches to it in one command.
+
+**It's a shortcut for:**
+```bash
+git branch feature/scheme-pdf-rag    # create branch
+git checkout feature/scheme-pdf-rag  # switch to it
+```
+
+**Concept:** The `-b` flag means "create new **b**ranch." The new branch starts as a copy of whatever branch you were on.
+
+---
+
+### Phase 4: Handling the Conflict
+
+#### What went wrong (and how we fixed it)
+
+```bash
+# First attempt: created branch from main
+git checkout main
+git checkout -b feature/scheme-pdf-rag
+git stash pop  # ❌ CONFLICT!
+```
+
+**Why it conflicted:** Your stashed changes modified files like `cloudinary.ts` and [schemeController.ts](file:///w:/NPTEL%20INTERNSHIP/Hackathon/NitiSetu/backend/src/controllers/schemeController.ts) that don't exist on `main`. When Git tried to apply your changes, it couldn't find the files to modify.
+
+**The fix:**
+```bash
+# Reset the conflicted state
+git reset HEAD                           # unstage everything
+git checkout -- .                        # discard working directory changes
+git clean -fd                            # remove untracked files
+
+# Delete the bad branch
+git checkout feature/voice-profile-ai    # go back to original branch
+git branch -D feature/scheme-pdf-rag     # delete the branch
+
+# Create branch from the RIGHT place
+git stash pop                            # restore our changes
+git checkout -b feature/scheme-pdf-rag   # create branch from HERE
+```
+
+#### Commands used during cleanup:
+
+| Command | Purpose |
+|---------|---------|
+| `git reset HEAD` | Unstages all files (moves them from staging back to working directory) |
+| `git checkout -- .` | Discards all modifications in working directory (restores to last commit) |
+| `git clean -fd` | Deletes untracked files. `-f` = force, `-d` = include directories |
+| `git branch -D` | Force-deletes a branch. Capital `-D` means delete even if not merged |
+
+---
+
+### Phase 5: Staging and Committing
+
+#### `git add -A`
+```bash
+git add -A
+```
+**What it does:** Stages ALL changes — modified, new, and deleted files.
+
+**Concept:** Staging = telling Git "include these changes in my next commit." Think of it as packing items into a box before shipping.
+
+| Variant | What it stages |
+|---------|---------------|
+| `git add -A` | Everything (modified + new + deleted) |
+| `git add .` | Everything in current directory and below |
+| `git add file.ts` | Only that specific file |
+
+---
+
+#### `git commit -m "message"`
+```bash
+git commit -m "feat: Add Scheme PDF Upload and RAG Pipeline
+
+- Add Gemini embedding integration (gemini-embedding-001)
+- Add PDF processing service (fetch, extract, chunk, embed, store)
+- Add scheme routes, controller, and models
+- Add Cloudinary PDF upload middleware
+- Add scheme validation rules
+- Fix module import paths to use relative paths"
+```
+
+**What it does:** Creates a permanent snapshot of your staged changes with a descriptive message.
+
+**Concept:** A commit is like a save point. You can always go back to any commit.
+
+**Commit message format (Conventional Commits):**
+```
+<type>: <short description>     ← first line (subject)
+                                ← blank line
+- Bullet point details          ← body (optional)
+- More details
+```
+
+| Type | When to use |
+|------|-------------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `refactor` | Code change that isn't a fix or feature |
+| `chore` | Build/config changes |
+
+---
+
+### Phase 6: Pushing to GitHub
+
+#### `git push -u origin feature/scheme-pdf-rag`
+```bash
+git push -u origin feature/scheme-pdf-rag
+```
+
+**What it does:** Uploads your commits to GitHub and creates the branch there.
+
+**Breaking it down:**
+| Part | Meaning |
+|------|---------|
+| `git push` | Upload commits to remote |
+| `-u` | Set "upstream tracking" (so future `git push` knows where to go) |
+| `origin` | The remote name (GitHub) |
+| `feature/scheme-pdf-rag` | The branch to push |
+
+**After `-u` is set, future pushes are simply:**
+```bash
+git push   # Git remembers where to push
+```
+
+---
+
+## Complete Flow Summary
+
+```mermaid
+flowchart TD
+    A["1. git status<br/>Check what changed"] --> B["2. git remote -v<br/>Confirm GitHub connection"]
+    B --> C["3. git branch<br/>See current branches"]
+    C --> D["4. git stash<br/>Save changes temporarily"]
+    D --> E["5. git checkout main<br/>Switch to main"]
+    E --> F["6. git checkout -b new-branch<br/>Create new branch"]
+    F --> G{"7. git stash pop<br/>Restore changes"}
+    G -->|"❌ Conflict!"| H["8. git reset + clean<br/>Undo the mess"]
+    H --> I["9. Switch back to<br/>voice-profile-ai"]
+    I --> J["10. Delete bad branch<br/>git branch -D"]
+    J --> K["11. git stash pop<br/>Restore changes ✅"]
+    K --> L["12. git checkout -b<br/>Create branch from HERE"]
+    L --> M["13. git add -A<br/>Stage all changes"]
+    M --> N["14. git commit -m<br/>Save snapshot"]
+    N --> O["15. git push -u origin<br/>Upload to GitHub 🚀"]
+
+    G -->|"✅ Success"| M
+
+    style G fill:#e76f51,color:#fff
+    style H fill:#e76f51,color:#fff
+    style O fill:#2d6a4f,color:#fff
+```
+
+---
+
+## Key Takeaway: Why Branch FROM the Right Place
+
+```
+❌ WRONG: main → new-branch (missing voice-profile files)
+✅ RIGHT: voice-profile-ai → new-branch (has all needed files)
+```
+
+Your scheme code **depends on** files created in `feature/voice-profile-ai` (like [Gemini.ts](file:///w:/NPTEL%20INTERNSHIP/Hackathon/NitiSetu/backend/src/config/Gemini.ts), `cloudinary.ts`, scheme models). So the new branch must start from that point, not from `main`!
