@@ -1,0 +1,11 @@
+﻿f03e8b5 (HEAD -> feature/scheme-pdf-rag) feat: Add Eligibility Check model and RAG service skeleton
+c1f291c (origin/feature/scheme-pdf-rag) feat: Add Scheme PDF Upload and RAG Pipeline
+f3e9529 (origin/feature/voice-profile-ai) Update team and contact information in README
+6c8368d (feature/voice-profile-ai) docs: Remove old documentation and add comprehensive README
+4231c72 feat: Add Voice-to-Profile AI Feature with Gemini
+5d3a8a1 (origin/feature/authSystem, feature/authSystem) feat: Implement authentication stystem with OTP verification
+ec1b47a (origin/main, main) Add comprehensive deployment and architecture documentation
+db51a66 Configure CORS for Vercel and add deployment docs
+b0aaa98 Fix: Move @types packages to dependencies for Render build
+4e364e0 FixedPortBinding
+f724542 BaseSetup

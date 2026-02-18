@@ -4,6 +4,7 @@ import authRoutes from './authRoutes';
 import exampleRoutes from "./exampleRoutes";
 import profileRoutes from "./profileRoutes";
 import schemeRoutes from './schemeRoutes';
+import eligibilityRoutes from './eligibilityRoutes';
 
 const router = Router();
 // Routes
@@ -28,5 +29,7 @@ router.use('/auth', authRoutes);
 router.use('/v1', exampleRoutes);//this routes is only for testing purpose
 router.use('/profile', profileRoutes);
 router.use('/schemes', schemeRoutes);
+router.use('/eligibility', eligibilityRoutes);
+
 
 export default router;

@@ -164,7 +164,7 @@ const eligibilityCheckSchema = new Schema<IEligibilityCheck>({
     //Which ai model was used
     llmModel: {
         type: String,
-        default: 'gemini-2.5',
+        default: 'gemini-2.5-flash',
     },
     checkedAt: {
         type: Date,

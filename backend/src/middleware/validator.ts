@@ -111,3 +111,7 @@ export const schemeUploadRules = [
 
     body("benefitAmount").optional().trim().isLength({ max: 200 }).withMessage("Benefit amount description is too long"),
 ];
+
+export const checkEligibilityRules = [
+    body('schemeId').trim().notEmpty().withMessage("Scheme Id is required!").isMongoId().withMessage("Invalid scheme ID format"),
+];
