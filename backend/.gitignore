@@ -4,3 +4,4 @@ dist/
 *.log
 .DS_Store
 crediential.txt
+NitiSetu_Auth_API.postman_collection.json
