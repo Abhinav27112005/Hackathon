@@ -1,15 +1,22 @@
 
 
 
+
 //PDF Processing service
 //Implementation of complete RAG ingestion pipeline
 
 import axios from "axios";
-// @ts-ignore
-import { PDFParse } from 'pdf-parse';
 import { embeddingModel } from '../config/Gemini';
 import SchemeChunk from "../models/schemeChunk";
 import Scheme from "../models/scheme";
+
+// pdf-parse v2 uses a class-based ESM API.
+// The package exports PDFParse as the default export.
+// We use a dynamic require to avoid TypeScript/ESM interop issues on Render.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const PDFParseLib = require('pdf-parse');
+// v2 exports the class as .PDFParse or as the default — handle both
+const PDFParse = PDFParseLib.PDFParse ?? PDFParseLib.default?.PDFParse ?? PDFParseLib.default ?? PDFParseLib;
 
 //PDF URL -> Fetch -> Extract Text -> Chunk -> Embed -> Store
 
@@ -34,7 +41,7 @@ class PDFProcessingService {
 
         } catch (error: any) {
             if (error.code === 'ECONNABORTED') {
-                throw new Error("Pdf download timed out. File might be too large.");
+                throw new Error("PDF download timed out. File might be too large.");
             }
             if (error.response?.status === 404) {
                 throw new Error("PDF not found on Cloudinary. It may have been deleted.");
@@ -49,17 +56,29 @@ class PDFProcessingService {
         console.log(`📄 Step 2/5: Extracting text from PDF...`);
 
         try {
-            // Updated for pdf-parse v2 (class-based API)
-            const parser = new PDFParse({ data: pdfBuffer });
-            const data = await parser.getText();
+            let text: string;
+            let totalPages: number;
 
-            const text = data.text;
-            const totalPages = data.total; // or data.pages.length works too
+            // pdf-parse v2 class-based API
+            if (typeof PDFParse === 'function' && PDFParse.prototype && typeof PDFParse.prototype.getText === 'function') {
+                // v2 class API: new PDFParse({ data: buffer }) → parser.getText()
+                const parser = new PDFParse({ data: pdfBuffer });
+                const data = await parser.getText();
+                text = data.text;
+                totalPages = data.total ?? data.pages?.length ?? 1;
+            } else if (typeof PDFParse === 'function') {
+                // v1 function API fallback: pdfParse(buffer) → { text, numpages }
+                const data = await PDFParse(pdfBuffer);
+                text = data.text;
+                totalPages = data.numpages ?? 1;
+            } else {
+                throw new Error('pdf-parse library could not be loaded correctly.');
+            }
 
-            //Valid extracted text
+            //Validate extracted text
             if (!text || text.trim().length < 100) {
                 throw new Error(
-                    'PDF appears to be empty or image-based(scanned).' + ' Text Extraction failed. Try a text based pdf.'
+                    'PDF appears to be empty or image-based (scanned). Text extraction failed. Try a text-based PDF.'
                 );
             }
 
@@ -70,9 +89,9 @@ class PDFProcessingService {
 
         } catch (error: any) {
             if (error.message.includes('encrypted') || error.message.includes('password')) {
-                throw new Error("Pdf is password protected. Please upload an unprotected pdf");
+                throw new Error("PDF is password-protected. Please upload an unprotected PDF.");
             }
-            throw new Error("Text Extraction failed: " + error.message);
+            throw new Error("Text extraction failed: " + error.message);
         }
 
     }

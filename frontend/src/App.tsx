@@ -6,15 +6,21 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
-// ── Pages ──
-import LandingPage from './pages/LandingPage'
+// ── Public Pages ──
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+
+// ── Protected Pages ──
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import DashboardPage from './pages/DashboardPage';
 import UploadSchemePage from './pages/UploadSchemePage';
 import EligibilityCheckerPage from './pages/EligibilityCheckerPage';
 import ResultsPage from './pages/ResultsPage';
+import SchemesPage from './pages/SchemesPage';
+import SchemeDetailPage from './pages/SchemeDetailPage';
+import ApplicationsPage from './pages/ApplicationsPage';
+import ApplicationDetailPage from './pages/ApplicationDetailPage';
 
 const App: React.FC = () => {
   return (
@@ -48,48 +54,55 @@ const App: React.FC = () => {
 
           {/* ══ PROTECTED ROUTES ══ */}
           <Route path="/profile-setup" element={
-            <ProtectedRoute>
-              <ProfileSetupPage />
-            </ProtectedRoute>
+            <ProtectedRoute><ProfileSetupPage /></ProtectedRoute>
           } />
 
           <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
+            <ProtectedRoute><DashboardPage /></ProtectedRoute>
           } />
 
           <Route path="/upload-scheme" element={
-            <ProtectedRoute>
-              <UploadSchemePage />
-            </ProtectedRoute>
+            <ProtectedRoute><UploadSchemePage /></ProtectedRoute>
           } />
 
           <Route path="/check-eligibility" element={
-            <ProtectedRoute>
-              <EligibilityCheckerPage />
-            </ProtectedRoute>
+            <ProtectedRoute><EligibilityCheckerPage /></ProtectedRoute>
           } />
 
           <Route path="/results/:checkId" element={
-            <ProtectedRoute>
-              <ResultsPage />
-            </ProtectedRoute>
+            <ProtectedRoute><ResultsPage /></ProtectedRoute>
+          } />
+
+          {/* ══ NEW ROUTES ══ */}
+          <Route path="/schemes" element={
+            <ProtectedRoute><SchemesPage /></ProtectedRoute>
+          } />
+
+          <Route path="/schemes/:id" element={
+            <ProtectedRoute><SchemeDetailPage /></ProtectedRoute>
+          } />
+
+          <Route path="/applications" element={
+            <ProtectedRoute><ApplicationsPage /></ProtectedRoute>
+          } />
+
+          <Route path="/applications/:id" element={
+            <ProtectedRoute><ApplicationDetailPage /></ProtectedRoute>
           } />
 
           {/* ══ 404 ══ */}
           <Route path="*" element={
             <div className="min-h-screen flex items-center justify-center
-                          bg-gradient-to-br from-green-50 to-white">
+                           bg-gradient-to-br from-green-50 to-white">
               <div className="text-center">
-                <h1 className="text-7xl font-bold text-gray-200">404</h1>
-                <p className="text-gray-500 mt-3 text-lg">Page not found</p>
+                <h1 className="text-8xl font-bold text-gray-100">404</h1>
+                <p className="text-gray-400 mt-3 text-lg">Page not found</p>
                 <a
                   href="/"
-                  className="inline-block mt-6 px-6 py-2 bg-green-600 text-white
-                           rounded-lg hover:bg-green-700 transition-colors"
+                  className="inline-block mt-6 px-6 py-2.5 bg-green-600 text-white
+                           rounded-xl hover:bg-green-700 transition-colors font-medium"
                 >
-                  Go Home →
+                  ← Go Home
                 </a>
               </div>
             </div>
