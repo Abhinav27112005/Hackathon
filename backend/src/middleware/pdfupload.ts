@@ -1,49 +1,77 @@
-import cloudinary from '../config/cloudinary';
+// pdfupload.ts
+// Uses multer memoryStorage + manual cloudinary upload stream.
+// This approach works reliably on Render (ephemeral filesystem, multer v2 compatibility).
+// multer-storage-cloudinary v4 is NOT compatible with multer v2, so we avoid it entirely.
+
 import multer from 'multer';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { Request } from 'express';
+import { v2 as cloudinaryV2 } from 'cloudinary';
+import { Readable } from 'stream';
 
-//client sends pdf -> Multer catches it -> cloudinary storage sends it to cloudinary -> cloudinary returns url -> url available in req.file.path
+// Re-export configured cloudinary instance for use in other files (e.g. deleteScheme)
+export { cloudinaryV2 as cloudinary };
 
+// ── Multer: store file in memory (never touches disk) ──
+const storage = multer.memoryStorage();
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req: any, file: Express.Multer.File) => {
-        //Generating a unique file name
-        const timestamp = Date.now();
-        const cleanName = file.originalname.replace('.pdf', '').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-
-        return {
-            folder: 'NitiSetu/scheme-pdfs',
-            resource_type: 'raw',
-            allowed_formats: ['pdf'],
-            public_id: `${cleanName}-${timestamp}`,
-        };
-    }
-})
-
-//File filter: only accept PDFs and reject all other file types
-
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback): void => {
+const fileFilter = (
+    req: Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+): void => {
     if (file.mimetype === 'application/pdf') {
-        //If it's pdf accept it
         cb(null, true);
     } else {
-        //Not a pdf reject with clear error
-        cb(new Error(`Only PDF files are allowed! You uploaded: ${file.mimetype}`));
+        cb(new Error(`Only PDF files are allowed! Received: ${file.mimetype}`));
     }
 };
-
-//Creating the multer instance
 
 const upload = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024, //10MB limit
-    }
-})
+        fileSize: 10 * 1024 * 1024, // 10 MB
+    },
+});
 
 export default upload;
 
-//Also exporting cloudinary for deletion operation
-export { cloudinary };
+// ── Helper: upload a buffer to Cloudinary via upload_stream ──
+// Called by the controller AFTER multer has stored the file in req.file.buffer
+export const uploadBufferToCloudinary = (
+    buffer: Buffer,
+    originalName: string
+): Promise<{ url: string; publicId: string }> => {
+    return new Promise((resolve, reject) => {
+        const timestamp = Date.now();
+        const cleanName = originalName
+            .replace('.pdf', '')
+            .replace(/[^a-zA-Z0-9]/g, '-')
+            .toLowerCase();
+
+        const uploadStream = cloudinaryV2.uploader.upload_stream(
+            {
+                folder: 'NitiSetu/scheme-pdfs',
+                resource_type: 'raw',
+                public_id: `${cleanName}-${timestamp}`,
+                format: 'pdf',
+            },
+            (error, result) => {
+                if (error || !result) {
+                    reject(error ?? new Error('Cloudinary upload returned no result'));
+                } else {
+                    resolve({
+                        url: result.secure_url,
+                        publicId: result.public_id,
+                    });
+                }
+            }
+        );
+
+        // Pipe the in-memory buffer into the upload stream
+        const readable = new Readable();
+        readable.push(buffer);
+        readable.push(null);
+        readable.pipe(uploadStream);
+    });
+};

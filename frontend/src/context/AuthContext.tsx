@@ -1,7 +1,7 @@
 //Auth context 
 //React context provides global state accessible form any components without prop drilling (passing props through 10 levels);
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { FarmerProfile, User } from "../types";
 import api from "../services/api";
 
@@ -39,7 +39,6 @@ export const AuthProvider:React.FC<{children: ReactNode}> = ({children}) =>{
 
     const checkAuthStatus = async () =>{
         const token = localStorage.getItem(TOKEN_KEY);
-        const savedUser = localStorage.getItem(USER_KEY);
 
         if(!token){
             setLoading(false);

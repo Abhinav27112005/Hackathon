@@ -3,7 +3,13 @@ import { NextFunction, Request, Response } from "express"
 import Scheme from "../models/scheme";
 import pdfProcessingService from "../services/pdfProcessingService";
 import SchemeChunk from "../models/schemeChunk";
-import cloudinary from "../config/cloudinary";
+import { cloudinary, uploadBufferToCloudinary } from "../middleware/pdfupload";
+
+// ── Startup check: warn immediately if Cloudinary is misconfigured ──
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    console.error('❌ FATAL: Missing Cloudinary environment variables. PDF uploads will fail!');
+    console.error('   Required: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET');
+}
 
 // Helper: log activity same as profile controller
 const logActivity = async (userId: string, type: 'check' | 'upload' | 'profile_update' | 'application' | 'login', description: string, schemeShortName?: string): Promise<void> => {
@@ -19,21 +25,34 @@ const logActivity = async (userId: string, type: 'check' | 'upload' | 'profile_u
 //Controller 1: UPLOAD SCHEME PDF
 export const uploadScheme = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        //Validate: if file uploaded
-
-        if (!req.file) {
+        // Validate: file must be present in memory (multer memoryStorage)
+        if (!req.file || !req.file.buffer) {
             res.status(400).json({
                 success: false,
-                message: "PDF file is required. Please attach a pdf file..",
+                message: "PDF file is required. Please attach a PDF file.",
             });
             return;
         }
 
         const { name, shortName, ministry, description, benefitAmount } = req.body;
 
-        const cloudinaryFile = req.file as any;
+        if (!name || !shortName) {
+            res.status(400).json({
+                success: false,
+                message: "Scheme name and short name are required.",
+            });
+            return;
+        }
 
-        //Create Scheme document 
+        // ── Upload buffer directly to Cloudinary (no disk write) ──
+        console.log(`☁️  Uploading PDF to Cloudinary: ${req.file.originalname}`);
+        const { url: cloudinaryUrl, publicId: cloudinaryPublicId } = await uploadBufferToCloudinary(
+            req.file.buffer,
+            req.file.originalname
+        );
+        console.log(`✅ Cloudinary upload complete: ${cloudinaryPublicId}`);
+
+        // ── Create Scheme document ──
         const scheme = await Scheme.create({
             name,
             shortName: shortName.toUpperCase(),
@@ -41,8 +60,8 @@ export const uploadScheme = async (req: Request, res: Response, next: NextFuncti
             description,
             benefitAmount,
             pdf: {
-                cloudinaryUrl: cloudinaryFile.path,
-                cloudinaryPublicId: cloudinaryFile.filename,
+                cloudinaryUrl,
+                cloudinaryPublicId,
                 originalFileName: req.file.originalname,
                 fileSize: req.file.size,
             },
@@ -51,21 +70,20 @@ export const uploadScheme = async (req: Request, res: Response, next: NextFuncti
             processingStatus: 'uploaded',
         });
 
-        //Starting of background processing
-
+        // ── Start background PDF processing (fetch PDF from Cloudinary URL → chunk → embed) ──
         pdfProcessingService.processScheme(scheme._id.toString()).then(() => {
-            console.log("Background Processing Completed: ", scheme.shortName);
+            console.log("✅ Background Processing Completed:", scheme.shortName);
         }).catch((error: any) => {
             console.error(`❌ Background processing failed: ${error.message}`);
         });
 
-        //LOG ACTIVITY
+        // ── Log activity ──
         await logActivity(req.user!._id.toString(), 'upload', `Uploaded scheme PDF: ${shortName.toUpperCase()}`, shortName.toUpperCase());
 
-        //responding
+        // ── Respond immediately (processing happens in background) ──
         res.status(201).json({
             success: true,
-            message: "PDF uploaded Successfully! Processing has started in the background.",
+            message: "PDF uploaded successfully! Processing has started in the background.",
             scheme: {
                 _id: scheme._id,
                 name: scheme.name,
@@ -76,7 +94,8 @@ export const uploadScheme = async (req: Request, res: Response, next: NextFuncti
             },
             note: "Use GET /api/schemes/:id/status to check processing progress",
         });
-    } catch (error) {
+    } catch (error: any) {
+        console.error('❌ Upload error:', error.message);
         next(error);
     }
 };

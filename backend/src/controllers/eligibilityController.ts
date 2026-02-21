@@ -107,10 +107,15 @@ export const checkSingleScheme = async (req: Request, res: Response, next: NextF
         );
 
         // ── Step 6: Send response ──
+        const savedObj = savedCheck.toObject();
         res.json({
             success: true,
             message: `Eligibility check completed for ${result.schemeShortName}`,
-            result: savedCheck,
+            result: {
+                ...savedObj,
+                // 'criterialMatched' is a typo in the schema; expose as 'criteriaMatched' too
+                criteriaMatched: savedObj.criterialMatched ?? [],
+            },
         });
     } catch (error: any) {
         // ── Handle specific error types ──
@@ -260,9 +265,17 @@ export const getCheckById = async (
             return;
         }
 
+        // Convert to plain object and add camelCase alias for the typo in schema
+        const checkObj = check.toObject();
+        const response = {
+            ...checkObj,
+            // 'criterialMatched' is a typo in the schema; expose it as 'criteriaMatched' too
+            criteriaMatched: checkObj.criterialMatched ?? [],
+        };
+
         res.json({
             success: true,
-            result: check,
+            result: response,
         });
 
     } catch (error) {
