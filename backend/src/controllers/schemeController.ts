@@ -95,7 +95,9 @@ export const uploadScheme = async (req: Request, res: Response, next: NextFuncti
             note: "Use GET /api/schemes/:id/status to check processing progress",
         });
     } catch (error: any) {
-        console.error('❌ Upload error:', error.message);
+        // Log full error so "undefined message" never hides the real cause
+        console.error('❌ Upload error:', error?.message ?? error);
+        console.error('❌ Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
         next(error);
     }
 };

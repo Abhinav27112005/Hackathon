@@ -5,11 +5,16 @@
 
 import multer from 'multer';
 import { Request } from 'express';
-import { v2 as cloudinaryV2 } from 'cloudinary';
 import { Readable } from 'stream';
 
-// Re-export configured cloudinary instance for use in other files (e.g. deleteScheme)
-export { cloudinaryV2 as cloudinary };
+// ── Use the ALREADY CONFIGURED cloudinary singleton from config ──
+// IMPORTANT: Never import { v2 as cloudinary } directly here — it would be an
+// unconfigured instance. The config/cloudinary.ts module calls cloudinary.config()
+// with env vars on import, so we must reuse that same instance.
+import cloudinaryInstance from '../config/cloudinary';
+
+// Re-export so schemeController can use it for deletes (replaces old ../config/cloudinary import)
+export { cloudinaryInstance as cloudinary };
 
 // ── Multer: store file in memory (never touches disk) ──
 const storage = multer.memoryStorage();
@@ -45,11 +50,11 @@ export const uploadBufferToCloudinary = (
     return new Promise((resolve, reject) => {
         const timestamp = Date.now();
         const cleanName = originalName
-            .replace('.pdf', '')
+            .replace(/\.pdf$/i, '')
             .replace(/[^a-zA-Z0-9]/g, '-')
             .toLowerCase();
 
-        const uploadStream = cloudinaryV2.uploader.upload_stream(
+        const uploadStream = cloudinaryInstance.uploader.upload_stream(
             {
                 folder: 'NitiSetu/scheme-pdfs',
                 resource_type: 'raw',
@@ -57,9 +62,18 @@ export const uploadBufferToCloudinary = (
                 format: 'pdf',
             },
             (error, result) => {
-                if (error || !result) {
-                    reject(error ?? new Error('Cloudinary upload returned no result'));
+                if (error) {
+                    // Cloudinary errors have http_code, message fields — log the full object
+                    console.error('❌ Cloudinary upload_stream error:', JSON.stringify(error));
+                    reject(new Error(
+                        error.message
+                        ?? (error as any).http_code?.toString()
+                        ?? JSON.stringify(error)
+                    ));
+                } else if (!result) {
+                    reject(new Error('Cloudinary upload returned no result'));
                 } else {
+                    console.log(`✅ Cloudinary upload success → ${result.secure_url}`);
                     resolve({
                         url: result.secure_url,
                         publicId: result.public_id,
