@@ -8,6 +8,12 @@ import { errorHandler, notFound } from './middleware/errorhandler';
 
 const app = express();
 
+// Trust Render's load balancer proxy (1 hop).
+// Required for express-rate-limit to correctly read the real client IP
+// from the X-Forwarded-For header on Render deployments.
+// Without this, express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({
     origin: [
