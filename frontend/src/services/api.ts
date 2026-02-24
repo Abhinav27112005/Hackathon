@@ -27,7 +27,6 @@ api.interceptors.request.use((config) => {
 //Response interceptor
 api.interceptors.response.use((response) => response, (error) => {
     const status = error.response?.status;
-    const message = error.response?.data?.message || "Something went wrong";
     if (status === 401) {
         localStorage.removeItem('niti_setu_token');
         localStorage.removeItem('niti_setu_user');

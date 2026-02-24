@@ -17,7 +17,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ steps, currentStep }) => 
       {steps.map((step, index) => {
         const isCompleted = currentStep > step.number;
         const isCurrent = currentStep === step.number;
-        const isUpcoming = currentStep < step.number;
+
 
         return (
           <React.Fragment key={step.number}>

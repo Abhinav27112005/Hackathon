@@ -50,7 +50,7 @@ const initialFormData = {
 
 const ProfileSetupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, profile, hasProfile, refreshProfile } = useAuth();
+  const { profile, hasProfile, refreshProfile } = useAuth();
 
   // ── State ──
   const [mode, setMode] = useState<'choose' | 'voice' | 'form'>('choose');
