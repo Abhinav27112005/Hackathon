@@ -19,7 +19,7 @@ app.use(cors({
     origin: [
         'http://localhost:5173',
         'http://localhost:3000',
-        'https://nitisetu-cyan.vercel.app',
+        'https://nitisetu-zeta.vercel.app',
         ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
         ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
     ],
