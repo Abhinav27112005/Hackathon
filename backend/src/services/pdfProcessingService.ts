@@ -182,50 +182,68 @@ class PDFProcessingService {
             embedding: number[];
         }> = [];
 
-        // Google Gemini supports batch embedding.
-        // Batch size limit is 100, but we stick to 20 for safety/rate limits.
-        const BATCH_SIZE = 20;
+        // Free tier limit: 100 requests/min → batch of 5 + 3s delay = ~20 batches/min = safe
+        const BATCH_SIZE = 5;
+        const INTER_BATCH_DELAY_MS = 3000;  // 3s between batches to pace requests
+        const MAX_RETRIES_PER_BATCH = 3;    // give up after 3 retries (don't loop forever)
 
         for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
             const batch = chunks.slice(i, i + BATCH_SIZE);
             const texts = batch.map((chunk) => chunk.chunkText);
 
-            try {
-                // Call Gemini Embedding API
-                const result = await embeddingModel.batchEmbedContents({
-                    requests: texts.map((text) => ({
-                        content: { role: 'user', parts: [{ text }] },
-                        taskType: "RETRIEVAL_DOCUMENT" as any, // Cast to any if TaskType enum isn't imported
-                        title: "Document Chunk"
-                    }))
-                });
+            let retryCount = 0;
+            let success = false;
 
-                // Gemini returns 'embeddings' array
-                const embeddings = result.embeddings;
+            while (!success && retryCount <= MAX_RETRIES_PER_BATCH) {
+                try {
+                    // Call Gemini Embedding API
+                    const result = await embeddingModel.batchEmbedContents({
+                        requests: texts.map((text) => ({
+                            content: { role: 'user', parts: [{ text }] },
+                            taskType: "RETRIEVAL_DOCUMENT" as any,
+                            title: "Document Chunk"
+                        }))
+                    });
 
-                // Combine chunks with embeddings
-                for (let j = 0; j < batch.length; j++) {
-                    if (embeddings[j] && embeddings[j].values) {
-                        embeddedChunks.push({
-                            chunkText: batch[j].chunkText,
-                            chunkIndex: batch[j].chunkIndex,
-                            metadata: batch[j].metadata,
-                            embedding: embeddings[j].values,
-                        });
+                    // Gemini returns 'embeddings' array
+                    const embeddings = result.embeddings;
+
+                    // Combine chunks with embeddings
+                    for (let j = 0; j < batch.length; j++) {
+                        if (embeddings[j] && embeddings[j].values) {
+                            embeddedChunks.push({
+                                chunkText: batch[j].chunkText,
+                                chunkIndex: batch[j].chunkIndex,
+                                metadata: batch[j].metadata,
+                                embedding: embeddings[j].values,
+                            });
+                        }
                     }
-                }
 
-                console.log(`   📦 Embedded ${Math.min(i + BATCH_SIZE, chunks.length)}/${chunks.length} chunks`);
+                    console.log(`   📦 Embedded ${Math.min(i + BATCH_SIZE, chunks.length)}/${chunks.length} chunks`);
+                    success = true;
 
-            } catch (error: any) {
-                console.error(`   ❌ Error embedding batch ${i / BATCH_SIZE + 1}:`, error.message);
+                    // Pace requests: small delay between successful batches
+                    if (i + BATCH_SIZE < chunks.length) {
+                        await new Promise(resolve => setTimeout(resolve, INTER_BATCH_DELAY_MS));
+                    }
 
-                if (error.message?.includes('429') || error.status === 429) {
-                    console.log('   ⏳ Rate limited. Waiting 10s...');
-                    await new Promise(resolve => setTimeout(resolve, 10000));
-                    i -= BATCH_SIZE; // Retry this batch
-                } else {
-                    throw error;
+                } catch (error: any) {
+                    const is429 = error.message?.includes('429') || error.status === 429;
+
+                    if (is429 && retryCount < MAX_RETRIES_PER_BATCH) {
+                        // Exponential backoff: 35s → 60s → 90s
+                        const waitMs = (retryCount + 1) * 35000;
+                        retryCount++;
+                        console.log(`   ⏳ Rate limited (attempt ${retryCount}/${MAX_RETRIES_PER_BATCH}). Waiting ${waitMs / 1000}s...`);
+                        await new Promise(resolve => setTimeout(resolve, waitMs));
+                    } else if (is429 && retryCount >= MAX_RETRIES_PER_BATCH) {
+                        // Skip this batch after too many retries (don't fail the whole pipeline)
+                        console.warn(`   ⚠️ Batch ${Math.ceil(i / BATCH_SIZE) + 1} skipped after ${MAX_RETRIES_PER_BATCH} retries.`);
+                        success = true; // move on
+                    } else {
+                        throw error; // non-429 error: propagate immediately
+                    }
                 }
             }
         }
