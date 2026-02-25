@@ -108,6 +108,31 @@ const LoginPage: React.FC = () => {
           <p className="text-gray-500 text-sm mt-1">Login to check your scheme eligibility</p>
         </div>
 
+        {/* ── Demo Credentials Banner ── */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm">
+          <p className="font-semibold text-amber-800 flex items-center gap-1 mb-2">
+            🧪 Demo Account — Try it instantly!
+          </p>
+          <div className="space-y-1 text-amber-700 font-mono text-xs bg-amber-100 rounded-lg px-3 py-2">
+            <p>📱 Phone: <strong>8210523688</strong></p>
+            <p>🔑 Password: <strong>Test123</strong></p>
+          </div>
+          <div className="mt-3 text-xs text-amber-700 border-t border-amber-200 pt-2">
+            <p className="font-medium mb-1">⚠️ OTP Login Note (Twilio Trial)</p>
+            <p>
+              OTP can only be sent to <strong>pre-verified numbers</strong> on our Twilio
+              trial account. To use OTP on your own number, please contact the developer
+              to get your number added.
+            </p>
+            <a
+              href="mailto:abhinavkumarjha763@gmail.com"
+              className="inline-flex items-center gap-1 mt-1.5 text-green-700 font-medium hover:underline"
+            >
+              ✉️ abhinavkumarjha763@gmail.com
+            </a>
+          </div>
+        </div>
+
         {/* ── Login Card ── */}
         <div className="bg-white rounded-2xl shadow-lg border border-green-100 p-6">
 

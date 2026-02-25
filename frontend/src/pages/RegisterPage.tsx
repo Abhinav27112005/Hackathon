@@ -110,6 +110,31 @@ const RegisterPage: React.FC = () => {
           <p className="text-gray-500 text-sm mt-1">Join to discover your scheme benefits</p>
         </div>
 
+        {/* ── Demo Credentials Banner ── */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm">
+          <p className="font-semibold text-amber-800 flex items-center gap-1 mb-2">
+            🧪 Want to explore first? Use the demo account!
+          </p>
+          <div className="space-y-1 text-amber-700 font-mono text-xs bg-amber-100 rounded-lg px-3 py-2">
+            <p>📱 Phone: <strong>8210523688</strong></p>
+            <p>🔑 Password: <strong>Test123</strong></p>
+          </div>
+          <div className="mt-3 text-xs text-amber-700 border-t border-amber-200 pt-2">
+            <p className="font-medium mb-1">⚠️ OTP Note (Twilio Trial Account)</p>
+            <p>
+              OTP SMS can only be delivered to <strong>pre-verified phone numbers</strong>{' '}
+              on our Twilio trial account. If you register with your own number, contact
+              the developer to get it verified so you can receive OTPs.
+            </p>
+            <a
+              href="mailto:abhinavkumarjha763@gmail.com"
+              className="inline-flex items-center gap-1 mt-1.5 text-green-700 font-medium hover:underline"
+            >
+              ✉️ abhinavkumarjha763@gmail.com
+            </a>
+          </div>
+        </div>
+
         <div className="bg-white rounded-2xl shadow-lg border border-green-100 p-6">
 
           {/* Step 1: Registration Form */}
