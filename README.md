@@ -5,7 +5,6 @@
 **An AI-powered platform helping Indian farmers discover & apply for government schemes**
 
 [![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-nitisetu--zeta.vercel.app-22c55e?style=for-the-badge)](https://nitisetu-zeta.vercel.app/)
-[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render)](https://niti-setu-backend.onrender.com/api)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 > 🌟 Built for the **NPTEL Internship Hackathon 2026**
@@ -21,7 +20,6 @@
 | Service | URL |
 |---|---|
 | 🖥️ Frontend (Vercel) | https://nitisetu-zeta.vercel.app/ |
-| ⚙️ Backend API (Render) | https://niti-setu-backend.onrender.com/api |
 
 ---
 
