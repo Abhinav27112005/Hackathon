@@ -60,11 +60,18 @@ export const AuthProvider:React.FC<{children: ReactNode}> = ({children}) =>{
             }catch{
                 //No profile yet
             }
-        }catch(error){
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(USER_KEY);
-            setUser(null);
-            setProfile(null);
+        }catch(error: any){
+            // Only clear token on 401 (invalid/expired token).
+            // Network errors, 5xx server errors, or CORS issues should NOT log the user out —
+            // they just mean the backend is temporarily unreachable.
+            const status = error?.response?.status;
+            if(status === 401){
+                localStorage.removeItem(TOKEN_KEY);
+                localStorage.removeItem(USER_KEY);
+                setUser(null);
+                setProfile(null);
+            }
+            // Otherwise: keep the token — backend may just be slow to wake up (Render free tier)
         }finally{
             setLoading(false);
         }

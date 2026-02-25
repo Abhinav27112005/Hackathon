@@ -60,6 +60,8 @@ export const uploadBufferToCloudinary = (
                 resource_type: 'raw',
                 public_id: `${cleanName}-${timestamp}`,
                 format: 'pdf',
+                access_mode: 'public',   // ← ensure public download (fixes 401 during processing)
+                type: 'upload',          // ← explicit upload type (not authenticated)
             },
             (error, result) => {
                 if (error) {
