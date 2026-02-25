@@ -70,8 +70,11 @@ export const uploadScheme = async (req: Request, res: Response, next: NextFuncti
             processingStatus: 'uploaded',
         });
 
-        // ── Start background PDF processing (fetch PDF from Cloudinary URL → chunk → embed) ──
-        pdfProcessingService.processScheme(scheme._id.toString()).then(() => {
+        // ── Start background PDF processing ──
+        // Pass the buffer directly (already in memory from multer) to skip
+        // re-downloading from Cloudinary, which causes 401 on Render.
+        const pdfBufferForProcessing = req.file.buffer;
+        pdfProcessingService.processScheme(scheme._id.toString(), pdfBufferForProcessing).then(() => {
             console.log("✅ Background Processing Completed:", scheme.shortName);
         }).catch((error: any) => {
             console.error(`❌ Background processing failed: ${error.message}`);

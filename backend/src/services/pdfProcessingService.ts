@@ -265,7 +265,9 @@ class PDFProcessingService {
     //Master function: ProcessScheme
     //Orchestrates the entire pipeline called after pdf is uploaded  to the cloudinary..
 
-    async processScheme(schemeId: string): Promise<void> {
+    // pdfBuffer is optional: if provided (fresh upload already in memory), skip Cloudinary download.
+    // If not provided (reprocess), download from Cloudinary URL.
+    async processScheme(schemeId: string, pdfBuffer?: Buffer): Promise<void> {
         console.log('\n╔══════════════════════════════════════╗');
         console.log('║  Starting PDF Processing Pipeline    ║');
         console.log('╚══════════════════════════════════════╝\n');
@@ -282,11 +284,18 @@ class PDFProcessingService {
             scheme.processingError = undefined; //Clear any previous error
             await scheme.save();
 
-            //step 1 fetch pdf
-            const pdfBuffer = await this.fetchPDF(scheme.pdf.cloudinaryUrl);
+            // step 1: use provided buffer (avoids Cloudinary 401) or download if reprocessing
+            let resolvedBuffer: Buffer;
+            if (pdfBuffer) {
+                console.log(`📥 Step 1/5: Using in-memory PDF buffer (skipping Cloudinary download)`);
+                console.log(`   Size: ${(pdfBuffer.length / (1024 * 1024)).toFixed(2)}MB`);
+                resolvedBuffer = pdfBuffer;
+            } else {
+                resolvedBuffer = await this.fetchPDF(scheme.pdf.cloudinaryUrl);
+            }
 
             //step 2 Extract text
-            const { text, totalPages } = await this.extractText(pdfBuffer);
+            const { text, totalPages } = await this.extractText(resolvedBuffer);
 
             //step 3 chunk text
             const chunks = this.chunkText(text);
