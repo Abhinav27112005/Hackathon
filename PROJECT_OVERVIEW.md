@@ -1,7 +1,4 @@
 # NitiSetu — Complete Project Overview
-> **One file to understand everything.** This document is gitignored and intended for internal use,
-> AI planning sessions (ChatGPT/Gemini), and onboarding new developers.
-> Last updated: March 2026
 
 ---
 
